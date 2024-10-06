@@ -6,6 +6,31 @@
 #include <algorithm>
 #include <string>
 #include "HashMap.h"
+
+template <typename Iterator>
+size_t count(Iterator begin, Iterator end) {
+    size_t counter = 0;
+    while (begin != end) {
+        ++begin;
+        ++counter;
+    }
+    return counter;
+}
+template <typename Iterator, typename T>
+size_t count_if_equal(Iterator begin, Iterator end, const T& val) {
+    size_t count = 0;
+    for (Iterator it = begin; it != end; ++it) {
+        if (*it == val) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+
+
+
+
 int main () {
 	using namespace std;
 	using namespace std::chrono;
@@ -21,7 +46,7 @@ int main () {
 	// prochain mot lu
 	string word;
 	vector<pair<string, int>> word_counts;
-	HashMap<std::string, int> wordCountMap(1000);
+	HashMap<std::string, int> wordCountMap(1000,0);
 	// une regex qui reconnait les caractères anormaux (négation des lettres)
 	regex re( R"([^a-zA-Z])");
 	while (input >> word) {
@@ -79,6 +104,20 @@ int main () {
         	            cout << "The word '" << target << "' does not appear in the text." << endl;
         	        }
         }
+       std::vector<std::pair<std::string,int>> vec = wordCountMap.extract();
+       cout << vec.size() << endl;
+       cout << count(vec.begin(),vec.end()) << endl;
+       std::vector<std::pair<std::string, int>> entries = wordCountMap.copyEntriesToVector();
+       cout << entries.size() << endl;
+       cout << count(entries.begin(),entries.end()) << endl;
+       std::sort(entries.begin(), entries.end(), [](const auto& a, const auto& b) {
+               return a.second > b.second;
+           });
+       std::cout << "les dix les plus frequents:"<< endl;
+           for (size_t i = 0; i < std::min(entries.size(), size_t(10)); ++i) {
+               std::cout << entries[i].first << ": " << entries[i].second << endl;
+           }
+
 
     return 0;
 }

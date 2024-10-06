@@ -20,9 +20,10 @@ private:
     typedef std::vector<std::forward_list<Entry>> buckets_t;
     buckets_t buckets;
     size_t capacity;
+    size_t count;
 
 public:
-    HashMap(size_t cap) : capacity(cap) {
+    HashMap(size_t cap,size_t count) :count(count),capacity(cap) {
         buckets.resize(cap);
     }
 
@@ -51,6 +52,87 @@ public:
 
        
         buckets[index].emplace_front(key, value);
+        count++;
         return false;
     }
+    size_t countt(){return count;}
+    std::vector<std::pair<K, V>> extract(){
+    	std::vector<std::pair<K,V>> vec;
+    		vec.reserve(capacity);
+    		for (auto& list: buckets){
+    			for (auto& elt: list){
+    			
+    				vec.emplace_back(elt.getKey(), elt.getValue());
+    				
+    			}
+    			
+    		}
+    		return vec;
+    }
+    std::vector<std::pair<K, V>> copyEntriesToVector() {
+            std::vector<std::pair<K, V>> vec;
+            vec.reserve(count); 
+            for (auto it = begin(); it != end(); ++it) {
+                vec.emplace_back(it->getKey(), it->getValue()); 
+            }
+            return vec;
+        }
+    class iterator {
+        private:
+            typename buckets_t::iterator vit; 
+             buckets_t & buckets;  
+            typename std::forward_list<Entry>::iterator lit; 
+        public:
+        
+               iterator(typename buckets_t::iterator v,buckets_t& b):vit(v)
+			   	   	   ,buckets(b){
+            	   if (v != buckets.end()) {
+            	   
+            		   lit = v->begin();
+            	   
+               
+               }
+            	   while (vit != buckets.end() && vit->empty()){
+            	                                                     
+            		   ++vit;
+            	    }
+            	                                                      
+            	   if (vit != buckets.end()) {
+            	          lit = vit->begin(); 
+            	              }  
+               }
+               iterator& operator++() {
+                           ++lit; 
+                           if (lit == vit->end()) {
+                               ++vit; 
+                               
+                                   while (vit != buckets.end() && vit->empty()){
+                                                   ++vit;
+                               }
+                                                   if (vit != buckets.end()) {
+                                                       lit = vit->begin(); 
+                                                   }
+                                               
+                               
+                           }
+                           return *this;
+                       }
+               bool operator!=(const iterator& other) const {
+                           return vit != other.vit || lit != other.lit;
+                       }
+               Entry& operator*() {
+                           return *lit;
+                       }
+               Entry* operator->() {
+                           return &(*lit); 
+                       }
+               
+    }; 
+    iterator begin() {
+          return iterator(buckets.begin(), buckets);
+      }
+
+      iterator end() {
+          return iterator(buckets.end(), buckets);
+      }
 };
