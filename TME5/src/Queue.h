@@ -1,8 +1,9 @@
 #ifndef SRC_QUEUE_H_
 #define SRC_QUEUE_H_
-
+#include <iostream>
 #include <cstdlib>
 #include <mutex>
+using namespace std;
 
 namespace pr {
 
@@ -14,6 +15,8 @@ class Queue {
 	size_t begin;
 	size_t sz;
 	mutable std::mutex m;
+	std::condition_variable cond;
+	bool isBlocking;
 
 	// fonctions private, sans protection mutex
 	bool empty() const {
@@ -33,6 +36,7 @@ public:
 	}
 	T* pop() {
 		std::unique_lock<std::mutex> lg(m);
+		while (empty() && isBlocking ){cond.wait(lg);}
 		if (empty()) {
 			return nullptr;
 		}
@@ -40,15 +44,23 @@ public:
 		tab[begin] = nullptr;
 		sz--;
 		begin = (begin + 1) % allocsize;
+		cond.notify_all();
 		return ret;
+	}
+	void setBlocking(bool isBlock){
+		this->isBlocking = isBlock;
+		cond.notify_all();
+
 	}
 	bool push(T* elt) {
 		std::unique_lock<std::mutex> lg(m);
+		while (full() && isBlocking ){cond.wait(lg);}
 		if (full()) {
 			return false;
 		}
 		tab[(begin + sz) % allocsize] = elt;
 		sz++;
+		cond.notify_all();
 		return true;
 	}
 	~Queue() {
