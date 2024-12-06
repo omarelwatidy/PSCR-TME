@@ -4,7 +4,7 @@
 #include <string>
 
 
-int main00() {
+int main00(){
 	pr::Socket sock;
 	sock.connect("localhost", 1664);
 	int N=42;
