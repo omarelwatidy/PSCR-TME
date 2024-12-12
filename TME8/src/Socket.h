@@ -8,7 +8,7 @@
 namespace pr {
 
 class Socket {
-	int fd;
+int fd;
 
 public :
 	Socket():fd(-1){}
